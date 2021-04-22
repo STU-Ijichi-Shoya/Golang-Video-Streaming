@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="css/common.css">
+    <link href="//use.fontawesome.com/releases/v5.15.1/css/all.css" rel="stylesheet">
+    <link href="button.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.plyr.io/3.6.7/plyr.css" />
+    <title>VideoStreming</title>
+</head>
+<body>
+    <div id="header">
+<div class="header-logo-space"><img src="img/logo-small.png" srcset="img/logo-small.png 240w"></div>        <a class="header-icons" href="/upload.html"><i class="fas fa-upload fa-lg header-icon-element"></i></a>
+    </div>
+    <div class="container">
+        <h1 class="playTitle">OSSアニメ</h1>
+        <div class="videoCommentSet">
+            <div class="screen" >
+                <video id="player" class="video-content" playsinline autoplay controls >
+                    <source src="anim\1 (1).mp4"/>
+                </video>
+            </div>
+            <div style="display:flex;flex-direction: row;">
+                <!-- <button id="video-play-btn">play</button>
+                <button id="video-pause-btn">pause</button> -->
+            </div>
+            <p>コメント送信（まだサーバには送信されません．表示されるだけです）</p>
+            <div class="commentInput">
+                <input id="itext" type="text">
+                <button id="show">send</button>
+            </div>
+            <p>コメントの流す頻度（コメント数/秒）</p>
+            <output id="output1">1</output>
+            <input id="commentFrequncy" type="range" value="2" min="0" max="15" step="1"
+                oninput="document.getElementById('output1').value=this.value">
+            <div id="experimantal-comment">
+                <p>[実験実装]大量にコメントが流れた場合を上からではなく上下中の順にする</p>
+                    <div class="toggle-switch">
+                    <input id="toggle-experimant" class="toggle-input" type='checkbox' />
+                    <label for="toggle" class="toggle-label"></label>
+                </div> 
+            </div>
+            <div style="margin:100px;border-color: red;border:2px solid;">
+                <p>サンプル動画</p>
+                <p>
+                    作品名：こうしす！
+                </p>
+                <p>
+                    商用利用可能<bt
+                    OPAP-JP contoributors<br>
+                    https://opap.jp/contributors
+                </p>
+            </div>
+        </div>
+    </div>
+    <style>
+        .playTitle{
+            font-size: 25px;
+        }
+        .commentInput{
+            width:70%;
+            display:flex;
+            flex-direction: row;
+            justify-content: center;
+        }
+        .videoCommentSet{
+            max-width:100%;
+            text-align: center;
+            display:flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        #itext{
+            border-top: 0;
+            border-left: 0;
+            border-right: 0;
+            width:60%;
+            border-bottom: 1px red solid;
+        }
+        #itext:focus{
+            border:0;
+            border-bottom: 1px red;
+        }
+        #show{
+            border: 0px;
+            background-color: red;
+            margin-left: 5px;
+        }
+        
+    </style>
+    <style>
+        @media screen and (max-width :960px){
+            :root{
+                --comment-Width:100vw;
+            }
+        }
+        @media screen and (min-width :961px){
+            :root{
+                --comment-Width:60vw;
+            }
+        }
+
+        :root{
+            --comment-HEIGHT:calc(var(--comment-Width)*9/16);
+
+            --comment-font-size:30px;
+            --comment-screen-extend-times:6;
+            --comment-font-color:white;
+        }
+        .container{
+            display:flex;
+            flex-direction: column;
+            text-align: center;
+        }
+        .screen{
+            width:var(--comment-Width);
+            height:calc(var(--comment-Width)*9/16);
+            /* left:var(--comment-Width); */
+            background-color: gray;
+            position:  relative;
+            overflow: hidden;
+            text-align: center;
+            /* z-index: ; */
+        }
+        .commentElement-sample{
+            top:0;
+        }
+        .myComment{
+            border: 4px solid ;
+            border-color: rgb(227, 232, 79);
+        }
+        .commentElement{
+            position:absolute;
+            color: var(--comment-font-color);
+            /* bottom:250px;   Y座標 */
+            /* left:;  */
+            /* right: 0; */
+            pointer-events: none;
+            padding:0;
+            margin:0;
+            animation-name: moveComment;
+            /* animation-duration:calc(4*var(--comment-screen-extend-times))s; */
+            animation-duration:24s;
+            animation-timing-function: linear;
+            font-size: var(--comment-font-size);
+            z-index:4;
+            background-color: transparent;
+            white-space: nowrap;
+            text-shadow    : 
+                2px  2px 1px #003366,
+                -2px  2px 1px #003366,
+                2px -2px 1px #003366,
+                -2px -2px 1px #003366,
+                2px  0px 1px #003366,
+                0px  2px 1px #003366,
+                -2px  0px 1px #003366,
+                0px -2px 1px #003366;
+        }
+        @keyframes moveComment{
+            50%{
+                right:50%;
+            }
+            100%{
+                transform:translateX(calc(var(--comment-Width)*-1*var(--comment-screen-extend-times)));
+            }
+        }
+        .video-content{
+            object-fit: content;
+            width: var(--comment-Width);
+            height:var(--comment-HEIGHT)
+        }
+    </style>
+        <script>
+            /*
+             --comment-HEIGHT:281px;
+            --comment-Width:500px;
+
+            --comment-Width-value:500;
+            --comment-HEIGHT-value:281;
+
+            --comment-font-size:30px;
+            --comment-screen-extend-times:6;
+            --comment-font-color:white;
+
+            */
+            
+
+            const root=document.documentElement;
+            
+            let upperLimit=10;
+            const video_content=document.querySelector(".video-content")
+
+            let displayTime=4;
+            let divideNum=5
+            let fontSize=30;
+
+            // 上 下 中 の順で次のインデックスを決定
+            function experimentalNextRene(n,num){
+                    //2でわる（右または左からの距離）
+                    let edge=n>>1;
+                    //奇数か？（奇数なら右から）
+                    if(n&1==1){
+                        return num-edge-1
+                    }
+                    return edge;
+            }
+
+            function normalNextRene(n,num){
+                return n;
+            }
+            let nextReneFunc=normalNextRene;
+
+            document.querySelector('#toggle-experimant').addEventListener('change',(e)=>{
+                console.log('changed')
+                nextReneFunc=e.target.checked?experimentalNextRene:normalNextRene;
+            })
+
+            //単位
+            function setScreenSizeCSS(x,unitX,y,unitY){
+                root.style.setProperty('--comment-HEIGHT',y+unitY)
+                root.style.setProperty('--comment-Width-value',x)
+                root.style.setProperty('--comment-Width',x+unitX)
+                root.style.setProperty('--comment-HEIGHT-value',y)
+            }
+            function setScreenCommentFont(fontsize){
+                root.style.setProperty('--comment-font-size',fontsize+'px')
+            }
+
+
+
+            // setScreenCommentFont(fontSize)
+            // setScreenSizeCSS(Xlimit,'px',YLimit,'px')
+
+
+            const screen=document.querySelector(".screen")
+
+            var videoState=""
+            
+
+            let tmp=document.createElement("div");
+                tmp.className='commentElement'
+                tmp.textContent='test'
+                screen.appendChild(tmp)
+            const fontHeight=tmp.clientHeight;
+            tmp.remove()
+
+            let oneRene=fontHeight;
+            divideNum=video_content.clientHeight/oneRene;
+
+            let comments=[]
+            for(let i=0;i<divideNum;i++){
+                comments.push(0)
+            }
+
+            // let comments=new binary_heap()
+            let beforeUpdated=Date.now()
+
+            function Display_comment(commentStr,isMine){
+                if(commentStr.length<6){
+                    commentStr+="    "
+                }
+                let cmnode=document.createElement("div");
+                cmnode.className='commentElement '
+                if(isMine){
+                    cmnode.className+=' myComment'
+                }
+                cmnode.textContent=commentStr
+                cmnode.addEventListener('animationend',(e)=>{
+                    
+                    e.target.style.display='none'
+                })
+                screen.appendChild(cmnode)
+                cmnode.style.animationPlayState="paused"
+                
+                let Xlimit=video_content.clientWidth
+                let YLimit=video_content.clientHeight;
+
+                const commentDefaultSpeed=Xlimit/displayTime;
+                let w= cmnode.clientWidth;
+                let s= w/commentDefaultSpeed;
+
+                let now=Date.now()
+                let diffTime=(now-beforeUpdated)/1000;
+                beforeUpdated=now;
+
+                let minRene=-1;
+                let value=1<<30;
+
+                
+                for(let tmp=0;tmp<divideNum;tmp++){
+                    let i= nextReneFunc(tmp,divideNum)
+                    //前回の更新からの時間を足す（経過時間を引く）
+                    comments[i]-=diffTime
+                    if(comments[i]<0){
+                        comments[i]=0;
+                        if(value!=0){
+                            minRene=i;
+                            value=0;
+                        }
+                    }
+                    //最小値を探索
+                    else if(value!=0&&value>comments[i]){
+                        value=comments[i]
+                        minRene=i;
+                    }
+                }
+
+                //最大値代入(コメント)
+                comments[minRene]= (s>value)? s:value;
+                // console.log(comments)
+                // cmnode.style.animationDuration=commentDefaultSpeed-(w/displayTime)+'s'
+                cmnode.style.top=minRene*(100/divideNum)+'%'
+                const perce=(w/Xlimit);
+                cmnode.style.right=perce*-100+"%";
+                //video play state check
+                if(videoState==='play'){
+                    cmnode.style.animationPlayState="running"
+                }else{
+                    cmnode.style.animationPlayState="paused"
+                }
+            }
+            let form=document.getElementById("itext")
+            let btn=document.getElementById("show")
+            btn.onclick = function(){
+                Display_comment(form.value)
+                form.value=''
+            }
+            document.querySelector('#itext').onkeypress=(e)=>{
+                const key = e.keyCode || e.charCode || 0;
+                // 13はEnterキーのキーコード
+                if (key == 13) {
+                    // アクションを行わない
+                    Display_comment(form.value,true)
+                    form.value=''
+                }
+            }
+            const playbtn= document.querySelector("#video-play-btn")
+            const pausebtn= document.querySelector("#video-pause-btn")
+
+            video_content.volume=0.1
+
+            function commentPause(){
+                document.querySelectorAll(".commentElement").forEach((e)=>{
+                    e.style.animationPlayState="paused"
+                })
+            }
+            function commentStart(){
+                video_content.play();
+                document.querySelectorAll(".commentElement").forEach((e)=>{
+                    e.style.animationPlayState="running"
+                })
+            }
+            video_content.addEventListener('play',()=>{
+                videoState='play'
+                video_content.play();
+                commentStart();
+            })
+            video_content.addEventListener('pause',()=>{
+                videoState='pause'
+                video_content.pause();
+                commentPause();
+            })
+            // playbtn.onclick=(e)=>{
+            //     video_content.play();
+            //     commentStart();
+            // }
+
+            // pausebtn.onclick = (e)=>{
+            //     video_content.pause();
+            //     commentPause();
+            // }
+            // function videoCntrl(){
+            //     const hoverend=3000;
+            //     console.log("hover")
+            //     beforeHover=Date.now();
+            //     video_content.setAttribute('controls','')
+            //     setTimeout(()=>{
+            //         if(Date.now()-beforeHover>hoverend)
+            //             video_content.removeAttribute('controls','')
+            //     },hoverend)
+            // }
+            // video_content.addEventListener('mouseover',(e)=>{
+               
+            // })
+            function displaySampleComment(){
+                Display_comment('sampleComment',false)
+            }
+            let handlerNum=setInterval(displaySampleComment,1000)
+            document.querySelector('#commentFrequncy').addEventListener('change',(e)=>{    
+                console.log('changed')
+                clearInterval(handlerNum)
+                if(e.target.value==0)return
+                handlerNum=setInterval(displaySampleComment,(1/e.target.value)*1000)
+            })
+
+        </script>
+
+    <script src="https://cdn.plyr.io/3.6.7/plyr.js"></script>
+    <script>plyr.setup();</script>
+</body>
+</html>
