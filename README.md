@@ -1,4 +1,4 @@
-# Golang-video-Streaming
+# Golang-Video-Streaming
 Go言語で実装した動画配信サイトです．
 アーキテクチャや，バックエンドを学ぶため，０から実装しています．  
 [フロントエンド実装はこちらから確認可能です．（サーバはまだ完成してないのでGithubPagesで）](https://stu-idichi-syoya.github.io/Golang-Video-Streaming/)
@@ -10,6 +10,7 @@ Go言語で実装した動画配信サイトです．
 いずれ，MPEG-DASHやHLSで配信したいと考えています．
 ただ，今回の目的として，バックエンドを体系的に学ぶことなので，先になると思います．
 以下にシステムの概要を示します．
+
 ### アーキテクチャ
     レイヤードアーキテクチャを採用しています．
     今回の実装ではフレームワークにGinを用いていますが，  
@@ -20,6 +21,7 @@ Go言語で実装した動画配信サイトです．
 
 ## フロントエンド
     純粋なHTML5とJavaScriptを用いています．
+    
     [フロントエンド実装はこちらから確認可能です．（サーバはまだ完成してないのでGithubPagesで）](https://stu-idichi-syoya.github.io/Golang-Video-Streaming/)
 ## ディレクトリ構成
 ```bash
