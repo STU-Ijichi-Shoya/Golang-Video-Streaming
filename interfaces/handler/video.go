@@ -19,7 +19,11 @@ type videoHandler struct {
 }
 
 func (v *videoHandler) HandleVideoGetAll(c *gin.Context) {
-	allvideo,err:=v.videoUsecase.GetAll()
+	page,err:=strconv.ParseInt(c.Query("page"),10,64)
+	if err != nil {
+		return
+	}
+	allvideo,err:=v.videoUsecase.GetAll(page)
 	if err != nil {
 		return
 	}
