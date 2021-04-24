@@ -12,7 +12,7 @@
 </head>
 <body>
     <div id="header">
-<div class="header-logo-space"><img src="img/logo-small.png" srcset="img/logo-small.png 240w"></div>        <a class="header-icons" href="/upload.html"><i class="fas fa-upload fa-lg header-icon-element"></i></a>
+<div class="header-logo-space"><img src="img/logo-small.png" srcset="img/logo-small.png 240w"></div>        <a class="header-icons" href="upload.html"><i class="fas fa-upload fa-lg header-icon-element"></i></a>
     </div>
     <div class="container">
         <h1 class="playTitle">OSSアニメ</h1>
@@ -37,6 +37,7 @@
                 oninput="document.getElementById('output1').value=this.value">
             <div id="experimantal-comment">
                 <p>[実験実装]大量にコメントが流れた場合を上からではなく上下中の順にする</p>
+                <p>これにより，真ん中にコメントがあまり流れなくなり，見やすくなります</p>
                     <div class="toggle-switch">
                     <input id="toggle-experimant" class="toggle-input" type='checkbox' />
                     <label for="toggle" class="toggle-label"></label>
@@ -105,8 +106,10 @@
 
         :root{
             --comment-HEIGHT:calc(var(--comment-Width)*9/16);
+            --comment-ReneNum:12;
+            /* --comment-font-size:30px; */
+            --comment-font-size:calc(var(--comment-HEIGHT)/var(--comment-ReneNum));
 
-            --comment-font-size:30px;
             --comment-screen-extend-times:6;
             --comment-font-color:white;
         }
@@ -173,20 +176,81 @@
             height:var(--comment-HEIGHT)
         }
     </style>
+
         <script>
-            /*
-             --comment-HEIGHT:281px;
-            --comment-Width:500px;
+            class commentsCls{
+                constructor(uri){
+                    this.commentsList=null;
+                    this.Nextidx=0;
+                    fetch(uri)
+                    .then(res=>{
+                        if(res.ok){
+                            return res.text()
+                        }
+                        else{
+                            console.log(res)
+                            return Promise.reject(new Error('comment Error'))
+                        }
+                    })
+                    .then((text)=>{
+                        // console.log(text)
+                        let j=JSON.parse(text)
+                        this.commentsList=j;
 
-            --comment-Width-value:500;
-            --comment-HEIGHT-value:281;
+                    })
+                    .catch(err=>{
+                        console.log(err)
+                    })
+                }
+                getNextComment(time){
+                    let start=this.Nextidx;
 
-            --comment-font-size:30px;
-            --comment-screen-extend-times:6;
-            --comment-font-color:white;
+                    //全探索で次コメントを返す（秒あたりのコメント数が少ない場合に全探索のほうが速い）
+                    while(this.Nextidx<this.commentsList.length){
+                        let ele=this.commentsList[this.Nextidx];
+                        if(ele.time>time){
+                            break;
+                        }
+                        this.Nextidx++
+                    }
+                    // this.Nextidx++
+                    return this.commentsList.slice(start,this.Nextidx)
+                }
+                resetIndex(){
+                    this.Nextidx=0;
+                }
+                // 指定範囲の時間のコメントを二分探索ですべて返す
+                seekIndex(minTime,maxTime){
+                    // min index を求める
+                    let ng=-1,ok=this.commentsList.length;
+                    while(Math.abs(ok-ng)>1){
+                        let mid=Math.floor((ok+ng)/2)
+                        if(this.commentsList[mid].time>minTime){
+                            ok=mid;
+                        }
+                        else{
+                            ng=mid;
+                        }
+                    }
+                    let start= 0<=ok&&ok<this.commentsList.length?ok:0;
+                    
+                    //max indexを求める
+                    ok=-1,ng=this.commentsList.length;
+                    while(Math.abs(ok-ng)>1){
+                        let mid=Math.floor((ok+ng)/2)
+                        if(this.commentsList[mid].time<maxTime){
+                            ok=mid;
+                        }
+                        else{
+                            ng=mid;
+                        }
+                    }
+                    let end= 0<=ok&&ok<this.commentsList.length ? ok:this.commentsList.length-1
 
-            */
-            
+                    return this.commentsList.slice(start,end+1)
+
+                }
+            }           
 
             const root=document.documentElement;
             
@@ -248,7 +312,8 @@
             tmp.remove()
 
             let oneRene=fontHeight;
-            divideNum=video_content.clientHeight/oneRene;
+            //分割レーン数
+            divideNum=getComputedStyle(root).getPropertyValue('--comment-ReneNum')
 
             let comments=[]
             for(let i=0;i<divideNum;i++){
@@ -258,10 +323,12 @@
             // let comments=new binary_heap()
             let beforeUpdated=Date.now()
 
-            function Display_comment(commentStr,isMine){
-                if(commentStr.length<6){
-                    commentStr+="    "
-                }
+            function Display_comment(commentStrArray,isMine){
+
+                for(let i=0;i<commentStrArray.length;i++){
+
+                    let commentStr=commentStrArray[i].comment
+
                 let cmnode=document.createElement("div");
                 cmnode.className='commentElement '
                 if(isMine){
@@ -270,7 +337,8 @@
                 cmnode.textContent=commentStr
                 cmnode.addEventListener('animationend',(e)=>{
                     
-                    e.target.style.display='none'
+                    // e.target.style.display='none'
+                    e.target.remove()
                 })
                 screen.appendChild(cmnode)
                 cmnode.style.animationPlayState="paused"
@@ -312,7 +380,7 @@
                 comments[minRene]= (s>value)? s:value;
                 // console.log(comments)
                 // cmnode.style.animationDuration=commentDefaultSpeed-(w/displayTime)+'s'
-                cmnode.style.top=minRene*(100/divideNum)+'%'
+                cmnode.style.top=(minRene*(100/divideNum)-2)+'%'
                 const perce=(w/Xlimit);
                 cmnode.style.right=perce*-100+"%";
                 //video play state check
@@ -322,10 +390,11 @@
                     cmnode.style.animationPlayState="paused"
                 }
             }
+            }
             let form=document.getElementById("itext")
             let btn=document.getElementById("show")
             btn.onclick = function(){
-                Display_comment(form.value)
+                Display_comment([{comment:form.value}],true)
                 form.value=''
             }
             document.querySelector('#itext').onkeypress=(e)=>{
@@ -333,7 +402,7 @@
                 // 13はEnterキーのキーコード
                 if (key == 13) {
                     // アクションを行わない
-                    Display_comment(form.value,true)
+                    Display_comment([{comment:form.value}],true)
                     form.value=''
                 }
             }
@@ -363,31 +432,21 @@
                 video_content.pause();
                 commentPause();
             })
-            // playbtn.onclick=(e)=>{
-            //     video_content.play();
-            //     commentStart();
-            // }
 
-            // pausebtn.onclick = (e)=>{
-            //     video_content.pause();
-            //     commentPause();
-            // }
-            // function videoCntrl(){
-            //     const hoverend=3000;
-            //     console.log("hover")
-            //     beforeHover=Date.now();
-            //     video_content.setAttribute('controls','')
-            //     setTimeout(()=>{
-            //         if(Date.now()-beforeHover>hoverend)
-            //             video_content.removeAttribute('controls','')
-            //     },hoverend)
-            // }
-            // video_content.addEventListener('mouseover',(e)=>{
-               
-            // })
             function displaySampleComment(){
-                Display_comment('sampleComment',false)
+                Display_comment([{comment:'sampleComment'}],false)
             }
+
+            let cments=new commentsCls('http://localhost:8000/cat/sample.json')
+
+            setInterval(()=>{
+                if (videoState=='play'){
+                    let e=cments.getNextComment(video_content.currentTime)
+                    Display_comment(e)
+                }
+            },100)
+
+
             let handlerNum=setInterval(displaySampleComment,1000)
             document.querySelector('#commentFrequncy').addEventListener('change',(e)=>{    
                 console.log('changed')
